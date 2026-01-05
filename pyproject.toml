@@ -1,0 +1,29 @@
+[project]
+name = "bblt"
+version = "0.1.0"
+description = "LoRA adapters trained on BIG-bench's metaphor_boolean and implicatures tasks and evaluated on the identify_odd_metaphor task."
+requires-python = ">=3.10"
+dependencies = [
+  "torch",
+  "transformers>=4.41.0",
+  "datasets>=2.19.0",
+  "accelerate>=0.30.0",
+  "peft>=0.11.0",
+  "pyyaml>=6.0.1",
+  "tqdm",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "ruff",
+  "black",
+  "pre-commit",
+]
+
+[tool.black]
+line-length = 100
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I"]
