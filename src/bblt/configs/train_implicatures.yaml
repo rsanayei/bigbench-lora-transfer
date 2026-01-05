@@ -1,0 +1,3 @@
+base: configs/base.yaml
+task_name: implicatures
+output_dir: outputs/implicatures

@@ -1,0 +1,3 @@
+base: configs/base.yaml
+task_name: metaphor_boolean
+output_dir: outputs/metaphor_boolean

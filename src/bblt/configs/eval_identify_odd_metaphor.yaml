@@ -1,0 +1,3 @@
+base: configs/base.yaml
+task_name: identify_odd_metaphor
+output_dir: outputs/eval
