@@ -1,10 +1,11 @@
+import argparse
 import json
 import os
-import sys
 import yaml
 
 from bblt.data import load_mc_task
 from bblt.eval_mc import eval_mc_accuracy
+
 
 def load_cfg(path: str) -> dict:
     with open(path, "r") as f:
@@ -16,37 +17,50 @@ def load_cfg(path: str) -> dict:
         return base
     return cfg
 
-if __name__ == "__main__":
-    cfg_path = sys.argv[1]
-    adapter_path = sys.argv[2] if len(sys.argv) > 2 else None
 
-    cfg = load_cfg(cfg_path)
+if __name__ == "__main__":
+    p = argparse.ArgumentParser()
+    p.add_argument("cfg_path", help="Path to eval config YAML (can reference base)")
+    p.add_argument("--adapter", default=None, help="Path to PEFT adapter dir (optional)")
+    p.add_argument("--split", default=None, choices=["train", "validation"], help="Override eval split")
+    p.add_argument("--outdir", default=None, help="Override output directory")
+    args = p.parse_args()
+
+    cfg = load_cfg(args.cfg_path)
     model_name = cfg["model_name"]
     task_name = cfg["task_name"]
-    outdir = cfg["output_dir"]
     max_len = cfg.get("max_length", 512)
 
+    outdir = args.outdir or cfg["output_dir"]
     os.makedirs(outdir, exist_ok=True)
 
-    # Prefer validation if it exists; otherwise fall back to train
-    split = "validation"
+    # CLI split overrides YAML; otherwise use YAML or default validation
+    split = args.split or cfg.get("eval_split", "validation")
     try:
         examples = load_mc_task(task_name, split=split)
     except Exception:
+        # fallback
         split = "train"
         examples = load_mc_task(task_name, split=split)
 
-    res = eval_mc_accuracy(model_name=model_name, examples=examples, max_length=max_len, adapter_path=adapter_path)
+    res = eval_mc_accuracy(
+        model_name=model_name,
+        examples=examples,
+        max_length=max_len,
+        adapter_path=args.adapter,
+    )
 
     payload = {
         "model_name": model_name,
         "task": task_name,
         "split": split,
-        "adapter_path": adapter_path,
+        "adapter_path": args.adapter,
         "accuracy": res.accuracy,
         "n": res.n,
     }
-    outpath = os.path.join(outdir, f"{'base' if adapter_path is None else 'adapter'}_{task_name}.json")
+
+    tag = "base" if args.adapter is None else "adapter"
+    outpath = os.path.join(outdir, f"{tag}_{task_name}_{split}.json")
     with open(outpath, "w") as f:
         json.dump(payload, f, indent=2)
 

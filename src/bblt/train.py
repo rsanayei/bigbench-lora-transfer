@@ -80,7 +80,8 @@ def train_lora_sft(
         logging_steps=20,
         save_strategy="no",
         report_to="none",
-        fp16=torch.cuda.is_available(),  # simple heuristic
+        fp16=False,
+        bf16=False,
     )
 
     trainer = Trainer(model=model, args=args, train_dataset=ds_tok, data_collator=collator)

@@ -1,19 +1,18 @@
 model_name: Qwen/Qwen2.5-0.5B
-max_length: 512
+max_length: 256
 
 seed: 42
 device_map: auto
 
-# training defaults (used by train configs)
+# training defaults (overridden by CLI during sweeps)
 train:
-  per_device_batch_size: 4
-  grad_accum_steps: 4
+  per_device_batch_size: 1
+  grad_accum_steps: 8
   lr: 2.0e-4
-  epochs: 3
+  epochs: 2
   warmup_ratio: 0.03
   weight_decay: 0.0
-  max_train_examples: null   # null = full
-  eval_split: validation     
+  max_train_examples: null   # IMPORTANT: null means full by default
 
 lora:
   r: 16
